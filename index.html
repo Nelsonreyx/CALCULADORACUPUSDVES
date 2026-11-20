@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de Cambio VES → USD → CUP</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --primary: #1e3a8a;
+      --accent-cash: #059669;
+      --accent-transf: #2563eb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    h1 { font-size: 1.4rem; margin: 0; color: var(--primary); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+    .card { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-top: 5px solid var(--primary); }
+    .card.cash { border-top-color: var(--accent-cash); }
+    .card.transf { border-top-color: var(--accent-transf); }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
+    .cash .badge { background: var(--accent-cash); }
+    .transf .badge { background: var(--accent-transf); }
+    .field { margin-bottom: 14px; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+    input { width: 100%; padding: 10px 12px; font-size: 1.05rem; border: 1px solid var(--border); border-radius: 8px; font-weight: 600; }
+    input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30,58,138,0.1); }
+    .result-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 15px; }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+    .row:last-child { border-bottom: none; }
+    .row span { font-size: 0.9rem; color: var(--muted); }
+    .row strong { font-size: 1.1rem; }
+    .cup-total { color: var(--primary); font-size: 1.35rem !important; }
+    .summary { background: var(--primary); color: #fff; border-radius: 12px; padding: 20px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .summary-item small { display: block; opacity: 0.8; font-size: 0.8rem; }
+    .summary-item strong { font-size: 1.4rem; }
+    .actions { display: flex; gap: 10px; margin-top: 15px; }
+    button { padding: 10px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+    .btn-copy { background: #10b981; color: #fff; }
+    .btn-reset { background: #e5e7eb; color: var(--text); }
+    button:hover { opacity: 0.92; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Calculadora Operativa VES → USD → CUP</h1>
+      <div class="actions">
+        <button class="btn-copy" onclick="copiarResumen()">📋 Copiar Cotización</button>
+        <button class="btn-reset" onclick="restaurarBase()">↺ Cargar Datos Iniciales</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- CANAL EFECTIVO -->
+      <div class="card cash">
+        <span class="badge">CANAL EFECTIVO</span>
+        <div class="field">
+          <label>Monto Bolívares (BsF)</label>
+          <input type="number" id="ef_bs" step="0.01" oninput="calcular()" />
+        </div>
+        <div class="field">
+          <label>Tasa Dólar Venezuela (BsF / USD)</label>
+          <input type="number" id="ef_tasa_ves" step="0.01" oninput="calcular()" />
+        </div>
+        <div class="field">
+          <label>Tasa CUP por USD (Efectivo)</label>
+          <input type="number" id="ef_tasa_cup" step="0.01" oninput="calcular()" />
+        </div>
+        <div class="result-box">
+          <div class="row"><span>Equivalente USD:</span><strong id="ef_usd">$0,00</strong></div>
+          <div class="row"><span>Total CUP a entregar:</span><strong class="cup-total" id="ef_cup">$0,00</strong></div>
+        </div>
+      </div>
+
+      <!-- CANAL TRANSFERENCIA -->
+      <div class="card transf">
+        <span class="badge">CANAL TRANSFERENCIA</span>
+        <div class="field">
+          <label>Monto Bolívares (BsF)</label>
+          <input type="number" id="tr_bs" step="0.01" oninput="calcular()" />
+        </div>
+        <div class="field">
+          <label>Tasa Dólar Venezuela (BsF / USD)</label>
+          <input type="number" id="tr_tasa_ves" step="0.01" oninput="calcular()" />
+        </div>
+        <div class="field">
+          <label>Tasa CUP por USD (Transferencia)</label>
+          <input type="number" id="tr_tasa_cup" step="0.01" oninput="calcular()" />
+        </div>
+        <div class="result-box">
+          <div class="row"><span>Equivalente USD:</span><strong id="tr_usd">$0,00</strong></div>
+          <div class="row"><span>Total CUP a entregar:</span><strong class="cup-total" id="tr_cup">$0,00</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMEN CONSOLIDADO -->
+    <div class="summary">
+      <div class="summary-item"><small>Total Bolívares Recibidos</small><strong id="tot_bs">BsF 0,00</strong></div>
+      <div class="summary-item"><small>Total Puente USD</small><strong id="tot_usd">$0,00</strong></div>
+      <div class="summary-item"><small>Total General CUP</small><strong id="tot_cup">$0,00</strong></div>
+    </div>
+  </div>
+
+  <script>
+    const DATOS_MIGRADOS = {
+      ef_bs: 7000.00, ef_tasa_ves: 1077.00, ef_tasa_cup: 850.00,
+      tr_bs: 37000.00, tr_tasa_ves: 1077.00, tr_tasa_cup: 700.00
+    };
+
+    const fmt = (num, prefix = '$') => prefix + num.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    function cargarDatos() {
+      const guardado = JSON.parse(localStorage.getItem('calc_ves_cup')) || DATOS_MIGRADOS;
+      Object.keys(DATOS_MIGRADOS).forEach(id => document.getElementById(id).value = guardado[id]);
+      calcular();
+    }
+
+    function restaurarBase() {
+      localStorage.setItem('calc_ves_cup', JSON.stringify(DATOS_MIGRADOS));
+      cargarDatos();
+    }
+
+    function calcular() {
+      const v = {};
+      Object.keys(DATOS_MIGRADOS).forEach(id => v[id] = parseFloat(document.getElementById(id).value) || 0);
+      localStorage.setItem('calc_ves_cup', JSON.stringify(v));
+
+      // Cálculo con precisión completa sin redondeo intermedio (idéntico a la hoja original)
+      const ef_usd = v.ef_tasa_ves > 0 ? v.ef_bs / v.ef_tasa_ves : 0;
+      const ef_cup = ef_usd * v.ef_tasa_cup;
+
+      const tr_usd = v.tr_tasa_ves > 0 ? v.tr_bs / v.tr_tasa_ves : 0;
+      const tr_cup = tr_usd * v.tr_tasa_cup;
+
+      document.getElementById('ef_usd').textContent = fmt(ef_usd);
+      document.getElementById('ef_cup').textContent = fmt(ef_cup);
+      document.getElementById('tr_usd').textContent = fmt(tr_usd);
+      document.getElementById('tr_cup').textContent = fmt(tr_cup);
+
+      document.getElementById('tot_bs').textContent = fmt(v.ef_bs + v.tr_bs, 'BsF ');
+      document.getElementById('tot_usd').textContent = fmt(ef_usd + tr_usd);
+      document.getElementById('tot_cup').textContent = fmt(ef_cup + tr_cup);
+    }
+
+    function copiarResumen() {
+      const texto = `📊 *RESUMEN DE OPERACIÓN*\n` +
+        `• *Efectivo:* ${document.getElementById('ef_usd').textContent} USD → *${document.getElementById('ef_cup').textContent} CUP*\n` +
+        `• *Transferencia:* ${document.getElementById('tr_usd').textContent} USD → *${document.getElementById('tr_cup').textContent} CUP*\n` +
+        `• *TOTAL A ENTREGAR:* *${document.getElementById('tot_cup').textContent} CUP*`;
+      navigator.clipboard.writeText(texto);
+      alert('Resumen copiado al portapapeles listo para pegar en WhatsApp.');
+    }
+
+    window.onload = cargarDatos;
+  </script>
+</body>
+</html>
